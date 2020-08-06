@@ -1,0 +1,63 @@
+/*
+  M1.T4D More-Inputs-Timer Board | Name:
+  Anthony Antoniou | Student ID:  214358992
+*/
+
+// Pins
+const uint8_t btn_pin = 2;
+const uint8_t led_pin = 5;
+const int ledb_pin = 4;
+
+const uint16_t t1_load = 0;
+const uint16_t t1_comp = 31250;
+
+void setup()
+{
+  // set button pin to input
+  DDRD &= ~(1 << btn_pin);
+  PORTD |= (1 << btn_pin);
+  
+  // set LED pin to output
+  DDRD |= (1 << led_pin);
+  
+  // falling edge of INT0 generates interrupt
+  EICRA |= (1 << ISC01);
+  EICRA &= ~(1 << ISC00);
+  
+  EIMSK |= (1 << INT0);
+  
+  // set second LED pin to output
+  DDRD |= (1 << ledb_pin);
+  
+  // reset timer1
+  TCCR1A = 0;
+  
+  
+  TCCR1B |= (1 << CS12);
+  TCCR1B &= ~(1 << CS11);
+  TCCR1B &= ~(1 << CS10);
+  
+  TCNT1 = t1_load;
+  OCR1A = t1_comp;
+  
+  TIMSK1 = (1 << OCIE1A);
+  
+  sei();
+}
+
+void loop()
+{
+  delay(500);
+}
+
+ISR(INT0_vect)
+{
+  PORTD ^= (1 << led_pin);
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+  TCNT1 = t1_load;
+  PORTD ^= (1 << ledb_pin);
+}
+  
